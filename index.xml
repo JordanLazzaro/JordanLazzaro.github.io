@@ -14,7 +14,7 @@
       
       <guid>http://JordanLazzaro.github.io/posts/gpt-in-a-nutshell/</guid>
       <description>This is the content you&amp;rsquo;re looking for.
-$\displaystyle A = softmax(\frac{QK^{T}}{\sqrt{d_{k}}})$
+$\displaystyle A = softmax(\frac{QK^{T}}{\sqrt{d_{k}}})V$
 def hello(): print(&amp;#34;Hello, World!&amp;#34;) </description>
     </item>
     
