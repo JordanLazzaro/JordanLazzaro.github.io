@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom" xmlns:content="http://purl.org/rss/1.0/modules/content/">
+  <channel>
+    <title>Jordan Lazzaro Blog</title>
+    <link>http://JordanLazzaro.github.io/</link>
+    <description>Recent content on Jordan Lazzaro Blog</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Thu, 09 Jun 2022 00:07:24 -0500</lastBuildDate><atom:link href="http://JordanLazzaro.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>GPT in a Nutshell</title>
+      <link>http://JordanLazzaro.github.io/posts/gpt-in-a-nutshell/</link>
+      <pubDate>Thu, 09 Jun 2022 00:07:24 -0500</pubDate>
+      
+      <guid>http://JordanLazzaro.github.io/posts/gpt-in-a-nutshell/</guid>
+      <description>This is the content you&amp;rsquo;re looking for.</description>
+    </item>
+    
+  </channel>
+</rss>
