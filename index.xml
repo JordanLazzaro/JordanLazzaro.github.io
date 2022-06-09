@@ -13,7 +13,9 @@
       <pubDate>Thu, 09 Jun 2022 00:07:24 -0500</pubDate>
       
       <guid>http://JordanLazzaro.github.io/posts/gpt-in-a-nutshell/</guid>
-      <description>This is the content you&amp;rsquo;re looking for.</description>
+      <description>This is the content you&amp;rsquo;re looking for.
+$\displaystyle A = softmax(\frac{QK^{T}}{\sqrt{d_{k}}})$
+def hello(): print(&amp;#34;Hello, World!&amp;#34;) </description>
     </item>
     
     <item>
