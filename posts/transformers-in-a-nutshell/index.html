@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>
+  Transformers in a Nutshell · Jordan Lazzaro Blog
+</title>
+    <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="light dark">
+
+
+
+
+<meta name="description" content="Transformers in a Nutshell Link to heading (If you’re impatient, you can play with the code here!)
+Introduction Link to heading For the uninitiated, transformers have —in the past few years— become the de facto standard choice of architecture for deep learning models across domains ranging from text and images all the way to 3D point clouds and model-based reinforcement learning. In this post, I will try to encapsulate and convey all the key pieces of information needed to intuit, precisely describe, and implement the transformer architecture.">
+<meta name="keywords" content="">
+
+<meta name="twitter:card" content="summary"/>
+<meta name="twitter:title" content="Transformers in a Nutshell"/>
+<meta name="twitter:description" content="Transformers in a Nutshell Link to heading (If you’re impatient, you can play with the code here!)
+Introduction Link to heading For the uninitiated, transformers have —in the past few years— become the de facto standard choice of architecture for deep learning models across domains ranging from text and images all the way to 3D point clouds and model-based reinforcement learning. In this post, I will try to encapsulate and convey all the key pieces of information needed to intuit, precisely describe, and implement the transformer architecture."/>
+
+<meta property="og:title" content="Transformers in a Nutshell" />
+<meta property="og:description" content="Transformers in a Nutshell Link to heading (If you’re impatient, you can play with the code here!)
+Introduction Link to heading For the uninitiated, transformers have —in the past few years— become the de facto standard choice of architecture for deep learning models across domains ranging from text and images all the way to 3D point clouds and model-based reinforcement learning. In this post, I will try to encapsulate and convey all the key pieces of information needed to intuit, precisely describe, and implement the transformer architecture." />
+<meta property="og:type" content="article" />
+<meta property="og:url" content="http://jordanlazzaro.github.io/posts/transformers-in-a-nutshell/" /><meta property="article:section" content="posts" />
+<meta property="article:published_time" content="2022-11-15T19:17:15-06:00" />
+<meta property="article:modified_time" content="2022-11-15T19:17:15-06:00" />
+
+
+
+
+
+<link rel="canonical" href="http://jordanlazzaro.github.io/posts/transformers-in-a-nutshell/">
+
+
+<link rel="preload" href="/fonts/forkawesome-webfont.woff2?v=1.2.0" as="font" type="font/woff2" crossorigin>
+
+
+  
+  
+  <link rel="stylesheet" href="/css/coder.min.c4d7e93a158eda5a65b3df343745d2092a0a1e2170feeec909b8a89443903c6a.css" integrity="sha256-xNfpOhWO2lpls980N0XSCSoKHiFw/u7JCbiolEOQPGo=" crossorigin="anonymous" media="screen" />
+
+
+
+
+
+
+
+
+ 
+
+
+
+
+<link rel="icon" type="image/png" href="/images/favicon-32x32.png" sizes="32x32">
+<link rel="icon" type="image/png" href="/images/favicon-16x16.png" sizes="16x16">
+
+<link rel="apple-touch-icon" href="/images/apple-touch-icon.png">
+<link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon.png">
+
+<link rel="manifest" href="/site.webmanifest">
+<link rel="mask-icon" href="/images/safari-pinned-tab.svg" color="#5bbad5">
+
+
+
+
+<meta name="generator" content="Hugo 0.100.2" />
+
+
+
+
+
+  </head>
+
+
+
+
+<body class="preload-transitions colorscheme-light">
+  
+<div class="float-container">
+    <a id="dark-mode-toggle" class="colorscheme-toggle">
+        <i class="fa fa-adjust fa-fw" aria-hidden="true"></i>
+    </a>
+</div>
+
+
+  <main class="wrapper">
+    <nav class="navigation">
+  <section class="container">
+    <a class="navigation-title" href="/">
+      Jordan Lazzaro Blog
+    </a>
+    
+      <input type="checkbox" id="menu-toggle" />
+      <label class="menu-button float-right" for="menu-toggle">
+        <i class="fa fa-bars fa-fw" aria-hidden="true"></i>
+      </label>
+      <ul class="navigation-list">
+        
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="/posts/">Posts</a>
+            </li>
+          
+            <li class="navigation-item">
+              <a class="navigation-link" href="/about/">About</a>
+            </li>
+          
+        
+        
+      </ul>
+    
+  </section>
+</nav>
+
+
+    <div class="content">
+      
+  <section class="container post">
+    <article>
+      <header>
+        <div class="post-title">
+          <h1 class="title">
+            <a class="title-link" href="http://jordanlazzaro.github.io/posts/transformers-in-a-nutshell/">
+              Transformers in a Nutshell
+            </a>
+          </h1>
+        </div>
+        <div class="post-meta">
+          <div class="date">
+            <span class="posted-on">
+              <i class="fa fa-calendar" aria-hidden="true"></i>
+              <time datetime="2022-11-15T19:17:15-06:00">
+                November 15, 2022
+              </time>
+            </span>
+            <span class="reading-time">
+              <i class="fa fa-clock-o" aria-hidden="true"></i>
+              26-minute read
+            </span>
+          </div>
+          
+          
+          
+        </div>
+      </header>
+
+      <div>
+        
+        <h1 id="transformers-in-a-nutshell">
+  Transformers in a Nutshell
+  <a class="heading-link" href="#transformers-in-a-nutshell">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h1>
+<p>(If you’re impatient, you can play with the code <em><strong><a href="https://gist.github.com/JordanLazzaro/81cf023d5d5478a5958cf885c8891504">here</a></strong></em>!)</p>
+<h2 id="introduction">
+  Introduction
+  <a class="heading-link" href="#introduction">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>For the uninitiated, transformers have —in the past few years— become the de facto standard choice of architecture for deep learning models across domains ranging from text and images all the way to 3D point clouds and model-based reinforcement learning. In this post, I will try to encapsulate and convey all the key pieces of information needed to intuit, precisely describe, and implement the transformer architecture. To show you how these ideas take working form, we will use a GPT-like causal language model as a motivating code example; utilizing tools like PyTorch-Lightning and Weights &amp; Biases to step through the entire development process and complete a fully trainable and usable model.</p>
+<p>I cannot, of course, fit everything interesting about the intuitions for transformers or their use cases into one blog post (there will be subsequent posts going further down the rabbit-hole), but I hope one comes away from this introduction confident that they can dive into papers and codebases with the necessary foundations to understand what you read. So without further ado, let’s dive in!</p>
+<hr>
+<h2 id="transformers-tldr">
+  Transformers, tl;dr.
+  <a class="heading-link" href="#transformers-tldr">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>For the impatient reader, the transformer is a parameterized, differentiable function which maps a discrete set of vectors to another —equally sized— discrete set of vectors. It does so by interleaving <em>global</em> interactions between vectors (ie. self-attention) with individual, <em>vector-wise</em> non-linear transformations (ie. Multi-layer Perceptron) to optionally (due to residual connections) modify each vector’s representation at each step along its path through the network. These global interactions between all elements in the set happen in a component called the <em>multi-headed</em> <em>self-attention</em> layer, where <em>self-</em> refers to the fact that elements are looking at other elements from the same set. This layer learns to appropriately mix select amounts of corresponding subspaces from each vector in the set independently and in parallel. These distinct collections of corresponding subspaces are what’s known as <em>attention heads</em>. Once the information is mixed, the attention heads are concatenated back into a full-sized vector, projected back into the original embedding space, and transformed via an MLP to produce a new representation for each of the composite vectors. Furthermore, we can add to each vector in the input set information about its position relative to other vectors in the set with what’s called a <em>positional encoding</em> (or alternatively, a learned <em>positional embedding</em>). This allows the transformer to learn about <em>sequences</em> of vectors effectively when order in the input matters. Finally, to facilitate a more seamless optimization process, normalization layers and residual connections are added between these interleaved operations so that gradients can flow nicely during back-propagation.</p>
+<p><img src="https://peterbloem.nl/files/transformers/transformer-block.svg" alt="https://peterbloem.nl/blog/transformers">
+<em><a href="https://peterbloem.nl/blog/transformers">https://peterbloem.nl/blog/transformers</a></em></p>
+<hr>
+<h2 id="attention-the-continuous-hash-table">
+  Attention: The Continuous Hash-Table
+  <a class="heading-link" href="#attention-the-continuous-hash-table">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>As previously mentioned, the self-attention mechanism is a means of appropriately mixing information from a set of elements, but how does it actually work? As a useful analogy to build our intuitions for the mechanics of attention, we can think this mechanism as a continuous hash-table containing vector-valued keys and values. For a given key, a normal hash-table will return to us a value corresponding to that key in the table. One key will correspond with one value. Now, imagine for a moment that we wrapped this hash-table in a new object which defined some modified behavior for our key-value table. Instead of providing a key and directly obtaining its corresponding value, we will instead provide what we’ll call a <em>query</em> value. This query value is compared with every key in the table, and a similarity score is obtained from each comparison. We then weight (or “attend to”) each value in the table based on how similar its corresponding key is to the provided query, and return a weighted sum of all the values as a result. Furthermore, if we scale each weight value to be in the range [0, 1] and sum to 1 using the softmax function, we can obtain a probability distribution over the table of values, making this weighted sum an expected value of all the values in the table. This procedure of retrieving composite values from the table based on how much each value was “attended to” is called <em>attention</em>.</p>
+<p><img src="/continuous-hash-table.png" alt="Continuous Hash-Table: returns expected-value (weighted sum) of the table’s values based on the similarity between the query with the table’s keys. NOTE: ‘softmax’ is a function that turns a vector of numbers into a probability distribution (ie. elements are between 0 and 1, and sum to 1).">
+<em>Continuous Hash-Table: returns expected-value (weighted sum) of the table’s values based on the similarity between the query with the table’s keys. NOTE: ‘softmax’ is a function that turns a vector of numbers into a probability distribution (ie. elements are between 0 and 1, and sum to 1).</em></p>
+<p>It’s important to note: we’ve assumed in this analogy that both the keys for the table and the queries provided take on useful forms for the task of weighting each table value appropriately. We also assume that the values themselves represent useful information to be mixed. In a transformer, these objects are fully differentiable, and can therefore use gradient based optimization to learn which forms are useful for a given task (quantified by some differentiable loss function). To do so, however, requires a reformulation of our attention setup to actually <em>be</em> differentiable, so let’s do that and see what attention in transformers looks like in practice.</p>
+<hr>
+<h2 id="attention-a-differentiable-definition">
+  <strong>Attention: A Differentiable Definition</strong>
+  <a class="heading-link" href="#attention-a-differentiable-definition">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>In the transformer, this query/hash-table combo needs to be learned for the task at hand, and is constructed via a <em>query</em> matrix, a <em>key</em> matrix, and a <em>value</em> matrix. These matrices are obtained by linearly projecting vectors in the input sequence (which are themselves row-vectors in an input matrix) using learned weight matrices $W_Q$, $W_K$, and $W_V$. We say that the vectors resulting from these projections belong to the <em>query space</em>, the <em>key space</em>, and the <em>value space</em> respectively (as compared to the input space from which they came)<em>.</em> The matrices $W_Q$ and $W_K$ learn to transform the input vectors in such a way that the dot products between the resulting query and key vectors become a relevant and useful measure of semantic similarity. This is done to appropriately weight each value vector using their respective keys as a signal of usefulness to the querying element. To put it more explicitly: Vectors in the query space play the role of exhibiting <em>what type of information a given input element is looking for, or “querying”</em>; Vectors in the key space play the role of exhibiting <em>what type of information a given element has to give.</em> Vectors in the value space can be thought of as useful, learned representations of the input vectors to be mixed together and propagated. There are many interesting intuitions to be had around the function of these attention components, such as being a type of continuous memory when seen through the lens of transformers as a Differentiable Neural Computer (DNC). In an effort to avoid deep rabbit holes, however, we will save that for a future blog post. So let’s keep going!</p>
+<p>Suppose our input $X$ is a collection of word embeddings in the form of $n$ row vectors of dimension $d_{model}$, where</p>
+<p>$$
+X=
+\begin{bmatrix}
+\text{&mdash;} &amp; x_1 &amp; \text{&mdash;} \\
+\text{&mdash;} &amp; x_2 &amp; \text{&mdash;}
+\\
+&amp;\vdots
+\\
+\text{&mdash;} &amp; x_n &amp; \text{&mdash;}
+\end{bmatrix},\ x \in \R^{d_{model}}
+$$</p>
+<p>We can obtain the query, key, and value vectors for each input vector in parallel by computing:</p>
+<p>$$
+Q=XW_{Q},\ K=XW_{K},\ V=XW_{V}
+$$</p>
+<p>where  $W_{Q}\in \R^{d_{model} \times d_k},\ W_{K}\in \R^{d_{model} \times d_k}$  and $W_{V} \in \R^{d_{model} \times d_v}$.</p>
+<p>The resulting matrices take the form:</p>
+<p>$$
+Q=
+\begin{bmatrix}
+\text{&mdash;} &amp; q_1 &amp; \text{&mdash;} \\
+\text{&mdash;} &amp; q_2 &amp; \text{&mdash;}
+\\
+&amp;\vdots
+\\
+\text{&mdash;} &amp; q_n &amp; \text{&mdash;}
+\end{bmatrix},
+\ K=
+\begin{bmatrix}
+\text{&mdash;} &amp; k_1 &amp; \text{&mdash;} \\
+\text{&mdash;} &amp; k_2 &amp; \text{&mdash;}
+\\
+&amp;\vdots
+\\
+\text{&mdash;} &amp; k_n &amp; \text{&mdash;}
+\end{bmatrix},
+\ V=
+\begin{bmatrix}
+\text{&mdash;} &amp; v_1 &amp; \text{&mdash;} \\
+\text{&mdash;} &amp; v_2 &amp; \text{&mdash;}
+\\
+&amp;\vdots
+\\
+\text{&mdash;} &amp; v_n &amp; \text{&mdash;}
+\end{bmatrix}
+$$</p>
+<p>where  $q \in \R^{d_k},\ k \in \R^{d_k},$ $v \in \R^{d_v}$, and $n$ is the sequence length or <em>context size</em>.</p>
+<p>Now, we can compute all the query-key similarity scores in parallel by representing them as $QK^T$, giving us an $n \times n$ matrix of scores, with every row corresponding to a query, and every column to a key. We can turn these scores into a probability distribution over the value vectors using the softmax function, with the constituent elements of the distribution being the attention weights. This means that the weighted sum of values becomes an expected value over the set of value vectors for the element of $X$ who’s query we used. More formally, for a given set of query, key, and value matrices, we can express this as $Attention(Q,K,V) = softmax(QK^T)V$. As clean and simple of a method as this seems for obtaining useful mixtures of value vectors, there’s a hidden issue with this process. As the size of $d_k$ grows larger (we have larger query/key vectors), the gradient which needs to flow through the softmax function during backprop gets blocked due to saturation from the increasing magnitudes of the dot products. This inhibits the gradient from reaching previous layers that need updating, which is a problem we need to address. The issue stems from the fact that the elements of any given $q$ and $v$ can be thought of as independent random variables with a mean of 0 and a variance of 1, so the variance of their dot product will be $d_k$ (you can see this result derived <a href="https://ai.stackexchange.com/questions/21237/why-does-this-multiplication-of-q-and-k-have-a-variance-of-d-k-in-scaled">here</a>). To bring these score values back to a reasonable range (back to mean 0 and variance of 1), we can simply normalize the score values by dividing by the standard deviation $\sqrt{d_k}$ to get values that don’t cause saturation of the softmax function. This gives us the final form of <em>scaled dot-product self-attention</em>:</p>
+<p>$$
+Attention(Q,K,V) = softmax(\frac{QK^T}{\sqrt{d_k}})V
+$$</p>
+<p>We can visualize what the matrices looks like as a diagram for a single example sequence:</p>
+<p><img src="/single-head-attention.png" alt="The IKEA store floor-plan of self-attention">
+<em>The IKEA store floor-plan of self-attention</em></p>
+<p>To extend this mechanism further, transformers typically use a flavor of attention known as <em>multi-headed</em> self-attention, which allows attention to be performed on different subspaces of each vector independently and in parallel. This is performed by splitting each vector into multiple, lower-dimensional <em>heads</em> which are attended to independently, and then brought back together as a full sized vector after attention is performed.</p>
+<p>First, we can visualize what the process of splitting our queries into heads looks like (the same operations are applied to the keys and values):</p>
+<p><img src="/query-in-shape.png" alt="Splitting query matrix into multiple attention heads (same process is performed for K and V)">
+<em>Splitting query matrix into multiple attention heads (same process is performed for K and V)</em></p>
+<p>With our queries, keys, and values split by attention head, we can now visualize how we calculate the attention matrix for each head (as well as what shapes things are):</p>
+<p><img src="/multi-headed-self-attention.png" alt="Multiplying Q and V to obtain our scores. We can use the softmax function row-wise to obtain our attention values">
+<em>Multiplying Q and V to obtain our scores. We can use the softmax function row-wise to obtain our attention values</em></p>
+<p>With our attention matrix, we can compute our mixtures of values. Once we obtain these mixtures, we can unstack the heads back into full sized vectors, and project them into our embedding space using $W_O$. Since $W_O$ is a single matrix without a batch dimension, it will be broadcasted across the batch dimension to project all our sequences in parallel.</p>
+<p><img src="/attention-value-product.png" alt="Multiplying our attention tensor with our value tensor to obtain our value mixtures, unstacking our heads into full sized vectors, and projecting those vectors into embedding space with W_O. “emb size” here is the same size as our query/key size">
+<em>Multiplying our attention tensor with our value tensor to obtain our value mixtures, unstacking our heads into full sized vectors, and projecting those vectors into embedding space with W_O. “emb size” here is the same size as our query/key size</em></p>
+<p>And finally, we obtain a new set of vectors composed of differing amounts of each independent subspace from every vector in the input sequence.</p>
+<p>Multi-headed self-attention was originally hypothesized to be advantageous because separate attention patterns could be learned in independent subspaces to capture a more rich set of interactions than a single head (due to the various attention patterns being averaged together when performed as a single head). There is a good amount of research which touches upon the explainability of this mechanism, such as <a href="https://transformer-circuits.pub/">Transformer Circuits Thread</a>, <a href="https://arxiv.org/abs/1910.06611">Schlag et al.</a>, and <a href="https://arxiv.org/abs/1905.09418">Voita et al.</a>, but this is a bit out of the scope of this post, so I encourage you to check it all out later.</p>
+<h2 id="transformer-block">
+  Transformer Block
+  <a class="heading-link" href="#transformer-block">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>Now that we’ve established what self-attention is and how it works, we can illustrate how it fits into the transformer architecture as a whole. The atomic unit of a transformer is a stackable component called the <em>transformer block</em>. This component combines the self-attention layer we just went over with a Multi-layer Perceptron to perform transformations on each of our value mixture vectors independently. The transformer block also normalizes these vectors prior to both self-attention and the MLP to ensure their values stay contained within a certain distribution, leading to faster convergence during training. In the original transformer, normalization was applied <em>after</em> both self-attention and the MLP, and is referred to as a <em>post-norm</em> transformer block (you can see this in the diagram at the top of the post). In following works, it was shown that normalization <em>before</em> these components works better. This layout is known —you guessed it— as a <em>pre-norm</em> transformer block. You can also combine the two, and this is known as <em>sandwich-norm</em>, but we’ll stick with pre-norm in this example. However, I encourage you to play with each and see what happens.</p>
+<p>On top of all this, the results of these operations are not applied <em>directly</em> to the input vectors, but are instead applied separately and added back to the inputs. This is known as a <em>residual connection</em>, and allows for the operations to be <em>optionally</em> applied to the inputs when they are useful to the model for the overall task. This means that during backpropagation, the gradients are duplicated and sent along both paths of the computation graph, allowing for gradient information to reach every layer in the model and be updated appropriately.</p>
+<p><img src="/transformer-block.png" alt="NOTE: The version of transformer block we’ll be looking it is known as a “pre-norm” transformer block, as compared to the original “post-norm” block introduced in “Attention is all you need”. This version is shown to work better in practice.">
+<em>NOTE: The version of transformer block we’ll be looking it is known as a “pre-norm” transformer block, as compared to the original “post-norm” block introduced in “Attention is all you need”. This version is shown to work better in practice.</em></p>
+<p>So, now that we know how the attention mechanism is paired with the Multi-layer Perceptron to produce transformed mixtures of learned value vectors, and how the use of normalization and residual layers improve training speed, we can begin to map these concepts into code.</p>
+<hr>
+<h2 id="putting-this-knowledge-into-practice">
+  Putting this knowledge into practice
+  <a class="heading-link" href="#putting-this-knowledge-into-practice">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>As a motivating example, and to help drive home the points we’ve learned about how transformers work, we’ll unveil the final missing piece of understanding: how do these concepts map to code we can actually use? To do this, we’re going to implement a GPT-like causal language model, taking heavy inspiration from the details described in the GPT-2 paper (ie. making liberal use of regularization, good weight initialization, and pre-normalization transformer blocks).</p>
+<h3 id="gpt-the-inside-scoop">
+  GPT: The Inside Scoop
+  <a class="heading-link" href="#gpt-the-inside-scoop">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>As a bit of background, GPT is a transformer model which learns to perform <em>causal language modeling</em>. The task here is to give the model a sequence of tokens, often referred to as a <em>prompt</em> or a <em>context</em>, and predict the next token in the sequence. To do this, the model is trained to —given a collection of tokens $X$—  minimize the loss:</p>
+<p>$$
+L(X) = \sum_{i} \log P(x_{i}\ |\ x_{i-k}, &hellip;, x_{i-1}; \Theta)
+$$</p>
+<p>where $\Theta$ here represents all the parameters that make up the transformer. The $k$ here is the sequence length or <em>context window</em> of elements that the model takes in.</p>
+<h3 id="tokenization-and-token-embeddings">
+  Tokenization and Token Embeddings
+  <a class="heading-link" href="#tokenization-and-token-embeddings">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>Furthermore, since the transformer can’t take in text directly, we have to transform our input into a form conducive to the model (which are vectors). Since text is represented as a stream of characters, we first have to somehow map the text to discrete integer values called <em>tokens</em>, and the process itself is called <em>tokenization</em>. Tokens could be built from distinct words, distinct subword components, or even simply the characters themselves. In either case, these tokens form a finite set of distinct elements which all our input text is made up of. This finite collection of distinct tokens is called our <em>vocabulary</em>, and the number distinct tokens we have is called our <em>vocabulary size</em>. We’re not done, however, as the transformer is expecting <em>vectors</em>. Since we have a fixed number of distinct elements we can take in, this becomes an easy task; we can build an embedding matrix and use the integer values for each token as an index into said embedding matrix. This will allow the model to learn how to usefully represent the incoming tokens as embedding vectors during training.</p>
+<h3 id="positional-embeddings">
+  Positional Embeddings
+  <a class="heading-link" href="#positional-embeddings">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>There’s still one big problem: the operations that make up the transformer are invariant to the order in which the input elements are in (remember we mentioned that transformers map <em>sets to sets</em>). Self-attention is just a weighted sum, and is therefore a commutative operation. The MLP is also applied to each vector independently, so it is also doesn’t care about position either. Because of this, if the input elements change ordering, the same changes will apply to the output elements; and as a result, we say that the transformer is <em>permutation equivariant</em>. To get around this limitation, we will <em>inject</em> positional information into each embedding vector to use during training. This takes the form of another embedding vector the same size as the token embedding, and contains information about the position of a given element relative to the other elements in the sequence. This vector is then simply added to the token embedding itself, resulting in a new, positionally aware embedding vector; effectively turning our input <em>set</em> into an input <em>sequence</em>. The original transformer paper produced these position vectors (referred to in this case as <em>positional encodings</em>) using a function involving the overlap of sinusoids of different frequencies at different locations to build a sort of continuous binary encoding for position; but as it turns out, you can build an embedding matrix and learn how to represent positional information during training. This method is not without it’s drawbacks, as position information is now limited to the longest sequence we’ve seen in the training set (it is learned after all) but it’s simple to implement, and it’s what many GPT-like models use, so we’ll use it too.</p>
+<h3 id="attention-masking">
+  Attention Masking
+  <a class="heading-link" href="#attention-masking">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>In practice, the model learns to map each token in the context to the token it thinks should come next, given information from <em>only the tokens that came before it</em>. This means that for a sequence of tokens $x_1, x_2, &hellip;, x_n$ , token $x_i$ can only attend to the tokens $x_1, x_2, &hellip;, x_{i}$. We can achieve this by employing what’s referred to as an <em>attention mask</em>, where we set each query-key score ahead of a given token in the sequence to $- \infty$. This forces the attention values of all masked tokens to be zero (due to the softmax function), allowing for only the token itself and its preceding tokens to contribute values for the final representation of this token.</p>
+<p>We can visualize what this looks like for a simple example:</p>
+<p><img src="/attention-mask.png" alt="attention-mask.png"></p>
+<h3 id="test-time-autoregression">
+  Test-time Autoregression
+  <a class="heading-link" href="#test-time-autoregression">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>In order to produce output sequences generated by the model from a given prompt, we can iteratively feed the output from the model as a new input successively to get the next token prediction. You can play around with this process yourself with the Colab notebook linked at the end of the post.</p>
+<h3 id="causal-multi-headed-self-attention">
+  Causal Multi-headed Self-Attention
+  <a class="heading-link" href="#causal-multi-headed-self-attention">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>The transformer component which, in my opinion, is the most involved to implement is the multi-headed self-attention layer. It helps to build it step by step, ensuring that the shapes of everything work as intended for each additional operation we add. It also helps to use broadcasting when possible to simplify the code as well as the tensor operations (it’s easier to think about simpler tensors).</p>
+<p>We can start by defining all the parameters and operations that make up the self-attention layer, as well as the causal attention mask using a config object to keep track of all our hyper-parameters. We need to define our $W_Q$, $W_K$, and $W_V$ matrices, as well as our $W_O$ matrix which will be used to project our concatenated heads back into the embedding space. We call this matrix (and residual projection matrices elsewhere in the code) <code>res_proj</code> because in the GPT-2 paper, every weight matrix which projects values back into a residual path is initialized differently (which we’ll see later when we define our <code>GPT</code> model class). Again from the paper, we use dropout regularization after the attention is computed and before the results are added back to the residual path. For the mask, we use a <code>register_buffer</code> to store a square, lower triangular matrix of ones (and the rest zeros) with height and width equal to the max sequence length supported by the model. This is due to the fact that we would like our mask to be stored with the <code>state_dict</code> for the model, but without accumulating gradients during use. I’m addition, with the mask set to the largest possible sequence length, we can slice into the mask for any sequences of shorter length to provide an appropriately sized mask for sequences within the maximum context size.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">CausalMultiHeadAttention</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, config):
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">assert</span> config<span style="color:#f92672">.</span>emb_size <span style="color:#f92672">%</span> config<span style="color:#f92672">.</span>num_heads <span style="color:#f92672">==</span> <span style="color:#ae81ff">0</span>
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>W_Q <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(config<span style="color:#f92672">.</span>emb_size, config<span style="color:#f92672">.</span>emb_size, bias<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>W_K <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(config<span style="color:#f92672">.</span>emb_size, config<span style="color:#f92672">.</span>emb_size, bias<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>W_V <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(config<span style="color:#f92672">.</span>emb_size, config<span style="color:#f92672">.</span>emb_size, bias<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>res_proj <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(config<span style="color:#f92672">.</span>emb_size, config<span style="color:#f92672">.</span>emb_size, bias<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>attn_dropout <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(config<span style="color:#f92672">.</span>attn_dropout_p)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>res_dropout <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(config<span style="color:#f92672">.</span>res_dropout_p)
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>register_buffer(
+</span></span><span style="display:flex;"><span>            <span style="color:#e6db74">&#39;mask&#39;</span>,
+</span></span><span style="display:flex;"><span>            torch<span style="color:#f92672">.</span>tril(torch<span style="color:#f92672">.</span>ones(config<span style="color:#f92672">.</span>max_seq_len, config<span style="color:#f92672">.</span>max_seq_len))
+</span></span><span style="display:flex;"><span>        )
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>num_heads <span style="color:#f92672">=</span> config<span style="color:#f92672">.</span>num_heads
+</span></span></code></pre></div><p>Now that our parameters are defined, we can outline the forward pass for the self-attention layer. Our self-attention takes as input a tensor containing a batch of embedding sequences of shape <code>(batch size, sequence length, embedding size)</code>. We can project each vector in each sequence to the query, key, and value spaces with our <code>W_Q</code>, <code>W_K</code>, and <code>W_V</code> to obtain our query, key, and value matrices <code>Q</code>, <code>K</code>, and <code>V</code>. From here, we must split <code>Q</code>, <code>K</code>, and <code>V</code> along the embedding dimension to perform self-attention across <code>num_heads</code> attention heads, arriving at a shape of <code>(batch size, sequence length, number of heads, head size)</code>. However, since we would like to perform attention on subspaces of the sequence independently for each head, we can transpose the <code>sequence length</code> and <code>number of heads</code> dimensions to make independent sequences of subspaces for each attention head.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e"># step 0) size: (b_s, s_l, e_s)</span>
+</span></span><span style="display:flex;"><span>		batch_size, seq_len, emb_size <span style="color:#f92672">=</span> x<span style="color:#f92672">.</span>size()
+</span></span><span style="display:flex;"><span>		head_dim <span style="color:#f92672">=</span> emb_size <span style="color:#f92672">//</span> self<span style="color:#f92672">.</span>num_heads
+</span></span><span style="display:flex;"><span>		
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e"># step 1) size: (b_s, s_l, e_s) -&gt; (b_s, s_l, n_h, h_d)</span>
+</span></span><span style="display:flex;"><span>		Q <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>W_Q(x)<span style="color:#f92672">.</span>reshape(batch_size, seq_len, self<span style="color:#f92672">.</span>num_heads, head_dim)
+</span></span><span style="display:flex;"><span>		K <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>W_K(x)<span style="color:#f92672">.</span>reshape(batch_size, seq_len, self<span style="color:#f92672">.</span>num_heads, head_dim)
+</span></span><span style="display:flex;"><span>		V <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>W_V(x)<span style="color:#f92672">.</span>reshape(batch_size, seq_len, self<span style="color:#f92672">.</span>num_heads, head_dim)
+</span></span><span style="display:flex;"><span>		
+</span></span><span style="display:flex;"><span>		<span style="color:#75715e"># step 2) size: (b_s, s_l, n_h, h_d) -&gt; (b_s, n_h, s_l, h_d)</span>
+</span></span><span style="display:flex;"><span>		Q <span style="color:#f92672">=</span> Q<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>)
+</span></span><span style="display:flex;"><span>		K <span style="color:#f92672">=</span> K<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>)
+</span></span><span style="display:flex;"><span>		V <span style="color:#f92672">=</span> V<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>)
+</span></span></code></pre></div><p>Once we’ve gotten our tensors all reshaped and ready to go, we can compute our scaled attention scores by multiplying our query tensor by our key tensor (and scaling by $\frac{1}{\sqrt{d_{head}}}$ since that’s the size of the vectors we’re taking dot products of). We first transpose our key tensor so that the query-key dot products result in a set of <code>sequence length</code> by <code>sequence length</code> shaped matrices of attention scores for each attention head. After our scores are calculated, we apply our mask by setting all the score values that correspond with a $0$ in the mask matrix to $- \infty$. This will ensure that when the softmax operation is applied, those elements will be set to $0$ and not allow their corresponding value vectors to contribute to the expected value. Since this matrix is a tensor of rank 2, PyTorch will broadcast it across both the head <em>and</em> batch dimensions to mask all the score matrices in parallel.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e"># step 3) size: (b_s, n_h, s_l, h_d) x (b_s, n_h, h_d, s_l) = (b_s, n_h, s_l, s_l)</span>
+</span></span><span style="display:flex;"><span>scores <span style="color:#f92672">=</span> Q <span style="color:#f92672">@</span> K<span style="color:#f92672">.</span>transpose(<span style="color:#f92672">-</span><span style="color:#ae81ff">2</span>, <span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>) <span style="color:#f92672">*</span> (<span style="color:#ae81ff">1.0</span> <span style="color:#f92672">/</span> math<span style="color:#f92672">.</span>sqrt(head_dim))
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># step 4) mask score values occuring ahead of a given element&#39;s seq position</span>
+</span></span><span style="display:flex;"><span>scores <span style="color:#f92672">=</span> scores<span style="color:#f92672">.</span>masked_fill(self<span style="color:#f92672">.</span>mask[:seq_len, :seq_len]<span style="color:#f92672">==</span><span style="color:#ae81ff">0</span>, float(<span style="color:#e6db74">&#39;-inf&#39;</span>))
+</span></span></code></pre></div><p>We can now apply softmax <em>row-wise</em> across every head. This will give us a probability distribution over the values for every query of every attention head.</p>
+<p>Again following the GPT-2 paper, we apply dropout to our attention matrices to prevent our model from overfitting. We can now multiply our attention tensor by our value tensor to obtain a tensor containing our mixture of values for each query.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e"># step 5) row-wise softmax (prob. dist. over values for every query)</span>
+</span></span><span style="display:flex;"><span>attn <span style="color:#f92672">=</span> F<span style="color:#f92672">.</span>softmax(scores, dim<span style="color:#f92672">=-</span><span style="color:#ae81ff">1</span>)
+</span></span><span style="display:flex;"><span>attn <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>attn_dropout(attn)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># step 6) size: (b_s, n_h, s_l, s_l) x (b_s, n_h, s_l, h_d) = (b_s, n_h, s_l, h_d)</span>
+</span></span><span style="display:flex;"><span>out <span style="color:#f92672">=</span> attn <span style="color:#f92672">@</span> V
+</span></span></code></pre></div><p>With the results computed for each head, we can now unravel our tensor and reassemble a sequence with full sized vectors. After concatenating our attention heads to form a full sized vector, we must linearly project the new vectors back into the embedding space with $W_O$ (which we’re calling <code>res_proj</code>).  Following the GPT-2 paper once more, we apply dropout after projecting into embedding space.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#75715e"># step 7) size: (b_s, n_h, s_l, h_d) -&gt; (b_s, s_l, e_s)</span>
+</span></span><span style="display:flex;"><span>out <span style="color:#f92672">=</span> out<span style="color:#f92672">.</span>transpose(<span style="color:#ae81ff">1</span>, <span style="color:#ae81ff">2</span>)<span style="color:#f92672">.</span>reshape(batch_size, seq_len, emb_size)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#75715e"># step 8) project concatentated heads into embedding space</span>
+</span></span><span style="display:flex;"><span>out <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>res_proj(out)
+</span></span><span style="display:flex;"><span>out <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>res_dropout(out)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span><span style="color:#66d9ef">return</span> out
+</span></span></code></pre></div><h3 id="multilayer-perceptron">
+  Multilayer-Perceptron
+  <a class="heading-link" href="#multilayer-perceptron">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>The next major component in the transformer is the Multilayer Perceptron (MLP). This component is relatively simple: we build a two-layer fully connected neural network with the GeLU activation function and dropout regularization applied.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">MLP</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, config):
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>hidden <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(config<span style="color:#f92672">.</span>emb_size, config<span style="color:#f92672">.</span>fc_hidden_dim)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>gelu <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>GELU()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>res_proj <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(config<span style="color:#f92672">.</span>fc_hidden_dim, config<span style="color:#f92672">.</span>emb_size)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>res_dropout <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(config<span style="color:#f92672">.</span>res_dropout_p)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>hidden(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>gelu(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>res_proj(x)
+</span></span><span style="display:flex;"><span>        x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>res_dropout(x)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> x
+</span></span></code></pre></div><h3 id="transformer-block-1">
+  Transformer Block
+  <a class="heading-link" href="#transformer-block-1">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>With the two major building blocks in place, we can now construct the full transformer block. For this, we will bring in both our self-attention and MLP layers, as well as two LayerNorm layers to ensure the vectors flowing through each sub component stay normalized to avoid saturation and gradient issues.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">TransformerBlock</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, config):
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>ln1 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>LayerNorm(config<span style="color:#f92672">.</span>emb_size)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>attn <span style="color:#f92672">=</span> CausalMultiHeadAttention(config)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>ln2 <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>LayerNorm(config<span style="color:#f92672">.</span>emb_size)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>mlp <span style="color:#f92672">=</span> MLP(config)
+</span></span></code></pre></div><p>We employ residual connections after both the self-attention and MLP layers to ensure gradients can flow easily to early layers of the network during back-propagation, and we employ LayerNorm prior to self-attention and MLP layers to ensure our vectors are normal (again to help avoid gradient issues due to saturation on non-linear layers).</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
+</span></span><span style="display:flex;"><span>    x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>ln1(x)
+</span></span><span style="display:flex;"><span>    x <span style="color:#f92672">=</span> x <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>attn(x)
+</span></span><span style="display:flex;"><span>    x <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>ln2(x)
+</span></span><span style="display:flex;"><span>    x <span style="color:#f92672">=</span> x <span style="color:#f92672">+</span> self<span style="color:#f92672">.</span>mlp(x)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> x
+</span></span></code></pre></div><h3 id="the-full-gpt-model">
+  The Full GPT Model
+  <a class="heading-link" href="#the-full-gpt-model">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p>With all that out of the way, we are finally ready to assemble our full causal language model. We start by defining our embedding matrices for both our token embeddings <code>tok_emb</code> and our learned positional embeddings <code>pos_emb</code>, as well as a simple, gradient-less parameter <code>pos_idxs</code> to hold a range of indices from 0 to the max sequence length which we’ll slice into to obtain indices  for our positional embedding matrix <code>pos_emb</code>.  Since our token embedding is returning a vector for each token (where the token value is an integer we can use to index into the embedding matrix), we can say that the number of embeddings in the token embedding matrix is equal to <code>vocab_size</code> and each embedding is of size <code>emb_size</code>. Similarly to the token embedding matrix, the positional embedding matrix has a <code>max_seq_len</code> number of positional embeddings of size <code>emb_size</code>. We again utilize dropout to avoid over-fitting. We can now stack up our <code>num_blocks</code> number of transformer blocks in a <code>nn.Sequential</code>, which will execute each block one after another (feeding the outputs from one block into the inputs of the next block). After another LayerNorm, we must use our outputs from the last transformer block to obtain our logits for the next token. We can define a matrix <code>head</code> to linearly project our last transformer block’s output representations to a vector of the size of our vocabulary.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">GPT</span>(nn<span style="color:#f92672">.</span>Module):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, config):
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>config <span style="color:#f92672">=</span> config
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>tok_emb <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Embedding(dataset<span style="color:#f92672">.</span>vocab_size, config<span style="color:#f92672">.</span>emb_size)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>pos_emb <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Embedding(config<span style="color:#f92672">.</span>max_seq_len, config<span style="color:#f92672">.</span>emb_size)
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>				self<span style="color:#f92672">.</span>emb_dropout <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(config<span style="color:#f92672">.</span>emb_dropout_p)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>blocks <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Sequential(<span style="color:#f92672">*</span>[TransformerBlock(config) <span style="color:#66d9ef">for</span> _ <span style="color:#f92672">in</span> range(config<span style="color:#f92672">.</span>num_blocks)])
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>ln <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>LayerNorm(config<span style="color:#f92672">.</span>emb_size)
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>head <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Linear(config<span style="color:#f92672">.</span>emb_size, config<span style="color:#f92672">.</span>vocab_size, bias<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>        <span style="color:#75715e"># parameter with list of indices for retrieving pos_emb</span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>pos_idxs <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Parameter(torch<span style="color:#f92672">.</span>arange(<span style="color:#ae81ff">0</span>, config<span style="color:#f92672">.</span>max_seq_len), requires_grad<span style="color:#f92672">=</span><span style="color:#66d9ef">False</span>)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>apply(self<span style="color:#f92672">.</span>_init_weights)
+</span></span></code></pre></div><p>In the forward pass of our model, we take in a matrix of row vectors where each row is a sequence of tokens, and each element of the row is an token integer corresponding to an element in the vocabulary we’re working with. We can use this matrix as indices to our embedding matrix, where each token will be turned into its corresponding token embedding. Same goes for our positional embedding, except we’re using the sequence length to obtain a range of positions which we can use as indices to our positional embedding matrix. Once we obtain our token embeddings and positional embeddings, we can add them together to get the final, positionally embedded sequence of vectors. After applying dropout again, we can pass these embedding sequences through the transformer blocks <code>blocks</code> to obtain a transformed sequence of vectors which we can project with <code>head</code> to obtain our logits for the predicted sequence of the next tokens.</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
+</span></span><span style="display:flex;"><span>    batch_size, seq_len <span style="color:#f92672">=</span> x<span style="color:#f92672">.</span>size()
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>		tok_embs <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>tok_emb(x)
+</span></span><span style="display:flex;"><span>    pos_embs <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>pos_emb(self<span style="color:#f92672">.</span>pos_idxs[:seq_len])
+</span></span><span style="display:flex;"><span>    seq <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>emb_dropout(tok_embs <span style="color:#f92672">+</span> pos_embs)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>		seq <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>blocks(seq)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>		seq <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>ln(seq)
+</span></span><span style="display:flex;"><span>    out <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>head(seq)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> out
+</span></span></code></pre></div><p>To ensure that the magnitudes of our weight values are an appropriate size after initialization, we can initialize them to be normal with a small standard deviation (GPT-2 used 0.2).</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">_init_weights</span>(self, module):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">if</span> isinstance(module, nn<span style="color:#f92672">.</span>Linear):
+</span></span><span style="display:flex;"><span>        torch<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>init<span style="color:#f92672">.</span>normal_(module<span style="color:#f92672">.</span>weight, mean<span style="color:#f92672">=</span><span style="color:#ae81ff">0.0</span>, std<span style="color:#f92672">=</span><span style="color:#ae81ff">0.02</span>)
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> module<span style="color:#f92672">.</span>bias <span style="color:#f92672">is</span> <span style="color:#f92672">not</span> <span style="color:#66d9ef">None</span>:
+</span></span><span style="display:flex;"><span>            torch<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>init<span style="color:#f92672">.</span>zeros_(module<span style="color:#f92672">.</span>bias)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">elif</span> isinstance(module, nn<span style="color:#f92672">.</span>Embedding):
+</span></span><span style="display:flex;"><span>        torch<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>init<span style="color:#f92672">.</span>normal_(module<span style="color:#f92672">.</span>weight, mean<span style="color:#f92672">=</span><span style="color:#ae81ff">0.0</span>, std<span style="color:#f92672">=</span><span style="color:#ae81ff">0.02</span>)
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">elif</span> isinstance(module, nn<span style="color:#f92672">.</span>LayerNorm):
+</span></span><span style="display:flex;"><span>        torch<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>init<span style="color:#f92672">.</span>zeros_(module<span style="color:#f92672">.</span>bias)
+</span></span><span style="display:flex;"><span>        torch<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>init<span style="color:#f92672">.</span>ones_(module<span style="color:#f92672">.</span>weight)
+</span></span><span style="display:flex;"><span>    
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">for</span> name, param <span style="color:#f92672">in</span> self<span style="color:#f92672">.</span>named_parameters():
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">if</span> name<span style="color:#f92672">.</span>endswith(<span style="color:#e6db74">&#39;res_proj.weight&#39;</span>):
+</span></span><span style="display:flex;"><span>            <span style="color:#75715e"># two residual connections per block (i.e. attn and mlp)</span>
+</span></span><span style="display:flex;"><span>            torch<span style="color:#f92672">.</span>nn<span style="color:#f92672">.</span>init<span style="color:#f92672">.</span>normal_(param, mean<span style="color:#f92672">=</span><span style="color:#ae81ff">0.0</span>, std<span style="color:#f92672">=</span><span style="color:#ae81ff">0.02</span><span style="color:#f92672">/</span>math<span style="color:#f92672">.</span>sqrt(<span style="color:#ae81ff">2</span> <span style="color:#f92672">*</span> config<span style="color:#f92672">.</span>num_blocks))
+</span></span></code></pre></div><h2 id="training-the-model">
+  Training the model
+  <a class="heading-link" href="#training-the-model">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>We can now utilize PyTorch Lightning as a training harness for our model. Lightning is quite a nice tool when building Deep Learning models because it allows you to focus solely on the core model functionality while getting a lot of training and inference functionality for free. This includes not having to worry about which device you’re using, how many, or where you want to log your metrics. It also integrates seamlessly with Weights &amp; Biases, so there’s really no reason not to use both!</p>
+<div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">class</span> <span style="color:#a6e22e">GPT2LitModel</span>(pl<span style="color:#f92672">.</span>LightningModule):
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> __init__(self, model, config):
+</span></span><span style="display:flex;"><span>        super()<span style="color:#f92672">.</span>__init__()
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>model <span style="color:#f92672">=</span> model
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>config <span style="color:#f92672">=</span> config
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> self<span style="color:#f92672">.</span>model(x)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">training_step</span>(self, batch, batch_idx):
+</span></span><span style="display:flex;"><span>        x, y <span style="color:#f92672">=</span> batch
+</span></span><span style="display:flex;"><span>        logits <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>model(x)
+</span></span><span style="display:flex;"><span>        loss <span style="color:#f92672">=</span> F<span style="color:#f92672">.</span>cross_entropy(logits<span style="color:#f92672">.</span>reshape(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, logits<span style="color:#f92672">.</span>size(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)), y<span style="color:#f92672">.</span>reshape(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>))
+</span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>log(<span style="color:#e6db74">&#39;train_loss&#39;</span>, loss)
+</span></span><span style="display:flex;"><span>        
+</span></span><span style="display:flex;"><span>				<span style="color:#66d9ef">return</span> loss
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">configure_optimizers</span>(self):
+</span></span><span style="display:flex;"><span>        optimizer <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>optim<span style="color:#f92672">.</span>Adam(self<span style="color:#f92672">.</span>parameters(), lr<span style="color:#f92672">=</span>self<span style="color:#f92672">.</span>config<span style="color:#f92672">.</span>max_learning_rate)
+</span></span><span style="display:flex;"><span>
+</span></span><span style="display:flex;"><span>        <span style="color:#66d9ef">return</span> optimizer 
+</span></span></code></pre></div><p>As an important note, here we are reshaping <code>logits</code> such that we can compare every <code>vocab_size</code> logit vector in all the batches with every ground truth token value from every batch. <code>cross_entropy</code> will expect the logit values as the predicted values, and the correct class <em>indices</em> as ground truth targets (which in our case is the token integer value). In PyTorch, softmax is applied to the logits implicitly within the <code>cross_entropy</code> function.</p>
+<hr>
+<h2 id="youre-all-set">
+  You’re all set!
+  <a class="heading-link" href="#youre-all-set">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>And there you have it! A fully functioning transformer language model! Some of the code needed for configuration and wiring things up was omitted for clarity, but I highly encourage you to go play around with the notebook <a href="https://gist.github.com/JordanLazzaro/81cf023d5d5478a5958cf885c8891504">here</a>! The notebook uses a character-level Shakespeare dataset from Andrej Karpathy’s <a href="https://github.com/karpathy/char-rnn">char-rnn repo</a> (and the code as a whole is inspired by his project <a href="https://github.com/karpathy/minGPT">minGPT</a> and the HuggingFace GPT-2 model implementation). I encourage you to play with it, change the config values, swap out the dataset, etc.</p>
+<hr>
+<h2 id="conclusion">
+  Conclusion
+  <a class="heading-link" href="#conclusion">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>Throughout this post, we’ve outlined how the attention mechanism works using both intuitive examples and the mathematical definition. We also used those learned concepts to implement all of the components involved in the transformer architecture, and used that code to perform causal language modeling. With that completed, these concepts are now a tool in your toolbox to tackle further work involving the transformer architecture. I hope you enjoyed, and if you find any errors or would like to chat about AI, feel free to reach out to me on twitter!</p>
+<h2 id="resources">
+  Resources
+  <a class="heading-link" href="#resources">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h2>
+<p>While I tried to give my two cents on various aspects of transformers in this post, I also have a list of places to look to next:</p>
+<h3 id="lectures">
+  Lectures
+  <a class="heading-link" href="#lectures">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p><a href="https://youtu.be/BvWuYqEI5p0">Florian Marquardt’s Transformer lecture</a></p>
+<p><a href="https://youtu.be/fEVyfT-gLqQ">Alfredo Canziani’s NYU Deep Learning Lecture</a></p>
+<p><a href="https://youtube.com/playlist?list=PLoROMvodv4rNiJRchCzutFw5ItR_Z27CM">Stanford CS25 - Transformers United</a></p>
+<p><a href="https://www.youtube.com/watch?v=5vcj8kSwBCY&amp;t=2285s&amp;ab_channel=StanfordOnline">Ashish Vaswani Stanford CS224N Lecture on Transformers</a></p>
+<h3 id="blogspapers">
+  Blogs/Papers
+  <a class="heading-link" href="#blogspapers">
+    <i class="fa fa-link" aria-hidden="true" title="Link to heading"></i>
+    <span class="sr-only">Link to heading</span>
+  </a>
+</h3>
+<p><a href="https://peterbloem.nl/blog/transformers">Transformers From Scratch</a></p>
+<p><a href="https://jalammar.github.io/illustrated-transformer/">The Illustrated Transformer</a></p>
+<p><a href="https://jalammar.github.io/illustrated-gpt2/">The Illustrated GPT-2 (Visualizing Transformer Language Models)</a></p>
+<p><a href="https://jalammar.github.io/how-gpt3-works-visualizations-animations/">How GPT-3 Works - Visualizations and Animations</a></p>
+<p><a href="https://arxiv.org/abs/2207.09238">Formal Algorithms for Transformers</a></p>
+<p><a href="https://transformer-circuits.pub/">Transformer Circuits Thread</a></p>
+<p><a href="https://arxiv.org/abs/1706.03762">Attention Is All You Need</a></p>
+<p><a href="https://s3-us-west-2.amazonaws.com/openai-assets/research-covers/language-unsupervised/language_understanding_paper.pdf">GPT paper</a></p>
+<p><a href="https://d4mucfpksywv.cloudfront.net/better-language-models/language-models.pdf">GPT-2 paper</a></p>
+
+      </div>
+
+
+      <footer>
+        
+
+
+        
+        
+        
+      </footer>
+    </article>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.css"
+    integrity="sha384-R4558gYOUz8mP9YWpZJjofhk+zx0AS11p36HnD2ZKj/6JR5z27gSSULCNHIRReVs" crossorigin="anonymous">
+  
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/katex.min.js"
+    integrity="sha384-z1fJDqw8ZApjGO3/unPWUPsIymfsJmyrDVWC8Tv/a1HeOtGmkwNd/7xUS0Xcnvsx" crossorigin="anonymous"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/katex@0.15.1/dist/contrib/auto-render.min.js"
+    integrity="sha384-+XBljXPPiv+OzfbB3cVmLHf4hdUFHlWNZN5spNQ7rmHTXpd7WvJum6fIACpNNfIR" crossorigin="anonymous"
+    onload="renderMathInElement(document.body,
+      {
+        delimiters: [
+          {left: '$$', right: '$$', display:true},
+          {left: '$', right: '$', display:false},
+          {left: '\\(', right: '\\)', display: false},
+          {left: '\\[', right: '\\]', display: true}
+        ]
+      }
+    );"></script>
+  </section>
+
+    </div>
+
+    <footer class="footer">
+  <section class="container">
+    ©
+    
+    2022
+    
+    ·
+    
+    Powered by <a href="https://gohugo.io/">Hugo</a> & <a href="https://github.com/luizdepra/hugo-coder/">Coder</a>.
+    
+  </section>
+</footer>
+
+  </main>
+
+  
+
+  
+  
+  <script src="/js/coder.min.f411a1043e37c7c14dfb03f4d94d60d9ee69cfa413b16d0fd4f28695babb82bb.js" integrity="sha256-9BGhBD43x8FN&#43;wP02U1g2e5pz6QTsW0P1PKGlbq7grs="></script>
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+
+  
+</body>
+
+</html>

@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
   <channel>
-    <title>Jordan Lazzaro Blog</title>
-    <link>http://jordanlazzaro.github.io/</link>
-    <description>Recent content on Jordan Lazzaro Blog</description>
+    <title>Posts on Jordan Lazzaro Blog</title>
+    <link>http://jordanlazzaro.github.io/posts/</link>
+    <description>Recent content in Posts on Jordan Lazzaro Blog</description>
     <generator>Hugo -- gohugo.io</generator>
     <language>en-us</language>
-    <lastBuildDate>Tue, 15 Nov 2022 19:17:15 -0600</lastBuildDate><atom:link href="http://jordanlazzaro.github.io/index.xml" rel="self" type="application/rss+xml" />
+    <lastBuildDate>Tue, 15 Nov 2022 19:17:15 -0600</lastBuildDate><atom:link href="http://jordanlazzaro.github.io/posts/index.xml" rel="self" type="application/rss+xml" />
     <item>
       <title>Transformers in a Nutshell</title>
       <link>http://jordanlazzaro.github.io/posts/transformers-in-a-nutshell/</link>
@@ -15,16 +15,6 @@
       <guid>http://jordanlazzaro.github.io/posts/transformers-in-a-nutshell/</guid>
       <description>Transformers in a Nutshell Link to heading (If you’re impatient, you can play with the code here!)
 Introduction Link to heading For the uninitiated, transformers have —in the past few years— become the de facto standard choice of architecture for deep learning models across domains ranging from text and images all the way to 3D point clouds and model-based reinforcement learning. In this post, I will try to encapsulate and convey all the key pieces of information needed to intuit, precisely describe, and implement the transformer architecture.</description>
-    </item>
-    
-    <item>
-      <title></title>
-      <link>http://jordanlazzaro.github.io/about/</link>
-      <pubDate>Mon, 01 Jan 0001 00:00:00 +0000</pubDate>
-      
-      <guid>http://jordanlazzaro.github.io/about/</guid>
-      <description>Hello Link to heading My name is Jordan, and I am a programmer from Chicago, IL.
-I like to learn about Machine Learning and AI.</description>
     </item>
     
   </channel>
