@@ -460,7 +460,7 @@ $$</p>
 </span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>tok_emb <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Embedding(dataset<span style="color:#f92672">.</span>vocab_size, config<span style="color:#f92672">.</span>emb_size)
 </span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>pos_emb <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Embedding(config<span style="color:#f92672">.</span>max_seq_len, config<span style="color:#f92672">.</span>emb_size)
 </span></span><span style="display:flex;"><span>        
-</span></span><span style="display:flex;"><span>				self<span style="color:#f92672">.</span>emb_dropout <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(config<span style="color:#f92672">.</span>emb_dropout_p)
+</span></span><span style="display:flex;"><span>		self<span style="color:#f92672">.</span>emb_dropout <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Dropout(config<span style="color:#f92672">.</span>emb_dropout_p)
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>blocks <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>Sequential(<span style="color:#f92672">*</span>[TransformerBlock(config) <span style="color:#66d9ef">for</span> _ <span style="color:#f92672">in</span> range(config<span style="color:#f92672">.</span>num_blocks)])
 </span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>ln <span style="color:#f92672">=</span> nn<span style="color:#f92672">.</span>LayerNorm(config<span style="color:#f92672">.</span>emb_size)
@@ -474,13 +474,13 @@ $$</p>
 <div class="highlight"><pre tabindex="0" style="color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4;"><code class="language-python" data-lang="python"><span style="display:flex;"><span><span style="color:#66d9ef">def</span> <span style="color:#a6e22e">forward</span>(self, x):
 </span></span><span style="display:flex;"><span>    batch_size, seq_len <span style="color:#f92672">=</span> x<span style="color:#f92672">.</span>size()
 </span></span><span style="display:flex;"><span>    
-</span></span><span style="display:flex;"><span>		tok_embs <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>tok_emb(x)
+</span></span><span style="display:flex;"><span>    tok_embs <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>tok_emb(x)
 </span></span><span style="display:flex;"><span>    pos_embs <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>pos_emb(self<span style="color:#f92672">.</span>pos_idxs[:seq_len])
 </span></span><span style="display:flex;"><span>    seq <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>emb_dropout(tok_embs <span style="color:#f92672">+</span> pos_embs)
 </span></span><span style="display:flex;"><span>    
-</span></span><span style="display:flex;"><span>		seq <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>blocks(seq)
+</span></span><span style="display:flex;"><span>	seq <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>blocks(seq)
 </span></span><span style="display:flex;"><span>    
-</span></span><span style="display:flex;"><span>		seq <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>ln(seq)
+</span></span><span style="display:flex;"><span>	seq <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>ln(seq)
 </span></span><span style="display:flex;"><span>    out <span style="color:#f92672">=</span> self<span style="color:#f92672">.</span>head(seq)
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">return</span> out
@@ -523,7 +523,7 @@ $$</p>
 </span></span><span style="display:flex;"><span>        loss <span style="color:#f92672">=</span> F<span style="color:#f92672">.</span>cross_entropy(logits<span style="color:#f92672">.</span>reshape(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>, logits<span style="color:#f92672">.</span>size(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>)), y<span style="color:#f92672">.</span>reshape(<span style="color:#f92672">-</span><span style="color:#ae81ff">1</span>))
 </span></span><span style="display:flex;"><span>        self<span style="color:#f92672">.</span>log(<span style="color:#e6db74">&#39;train_loss&#39;</span>, loss)
 </span></span><span style="display:flex;"><span>        
-</span></span><span style="display:flex;"><span>				<span style="color:#66d9ef">return</span> loss
+</span></span><span style="display:flex;"><span>		<span style="color:#66d9ef">return</span> loss
 </span></span><span style="display:flex;"><span>
 </span></span><span style="display:flex;"><span>    <span style="color:#66d9ef">def</span> <span style="color:#a6e22e">configure_optimizers</span>(self):
 </span></span><span style="display:flex;"><span>        optimizer <span style="color:#f92672">=</span> torch<span style="color:#f92672">.</span>optim<span style="color:#f92672">.</span>Adam(self<span style="color:#f92672">.</span>parameters(), lr<span style="color:#f92672">=</span>self<span style="color:#f92672">.</span>config<span style="color:#f92672">.</span>max_learning_rate)
